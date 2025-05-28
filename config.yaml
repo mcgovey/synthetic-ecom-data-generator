@@ -1,0 +1,13 @@
+
+customer:
+  num_customers: 5000
+merchant:
+  num_merchants: 100
+fraud:
+  num_transactions: 1000
+friendly_fraud:
+  enabled: true
+  rate: 0.15
+  triggers:
+    buyer_remorse: 0.3
+    family_dispute: 0.2

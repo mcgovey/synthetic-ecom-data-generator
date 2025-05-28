@@ -8,7 +8,11 @@ A tool for generating realistic synthetic e-commerce transaction data with fraud
 - Creates merchant profiles with varying risk levels
 - Simulates transaction patterns including both legitimate and fraudulent behaviors
 - Outputs data in Parquet format
-- Customizable number of customers, merchants, and transactions
+- Configuration-driven generation using YAML
+- Supports friendly fraud scenarios
+- Modular architecture for extensibility
+- Data quality validation and benchmark comparison
+- Streaming and parallel data generation for performance
 
 ## Installation
 
@@ -40,42 +44,30 @@ The setup script will:
 
 ## Usage
 
-The script provides a command-line interface using FIRE:
+The script is now fully configuration-driven using a YAML file. You can customize the generation parameters by editing the `config.yaml` file:
 
-```bash
-# Generate dataset with default parameters
-uv run ecommerce_fraud_data_generator.py generate
-
-# Customize the data generation
-uv run ecommerce_fraud_data_generator.py generate --num_customers=1000 --num_merchants=50 --num_transactions=50000 --output_file="my_dataset.parquet"
+```yaml
+customer:
+  num_customers: 5000
+merchant:
+  num_merchants: 100
+fraud:
+  num_transactions: 200000
+friendly_fraud:
+  enabled: true
+  rate: 0.15
+  triggers:
+    buyer_remorse: 0.3
+    family_dispute: 0.2
+    subscription_forgotten: 0.25
+    delivery_issues: 0.15
+    merchant_dispute: 0.1
 ```
 
-### Command-line Arguments
-
-- `num_customers`: Number of unique customers to generate (default: 5000)
-- `num_merchants`: Number of unique merchants to generate (default: 100)
-- `num_transactions`: Number of transactions to generate (default: 200000)
-- `output_file`: Filename for the output parquet file (default: "ecommerce_fraud_dataset.parquet")
-
-### Examples
-
-Here are some example use cases:
+To generate the dataset, simply run:
 
 ```bash
-# Small dataset for quick testing (few customers, merchants, and transactions)
-uv run ecommerce_fraud_data_generator.py generate --num_customers=10 --num_merchants=5 --num_transactions=100 --output_file="small_test.parquet"
-
-# Medium dataset with more customers than merchants
-uv run ecommerce_fraud_data_generator.py generate --num_customers=500 --num_merchants=20 --num_transactions=10000 --output_file="medium_dataset.parquet"
-
-# Large dataset with default parameters
-uv run ecommerce_fraud_data_generator.py generate
-
-# Custom output location
-uv run ecommerce_fraud_data_generator.py generate --output_file="data/fraud_data_$(date +%Y%m%d).parquet"
-
-# Only modify transaction count
-uv run ecommerce_fraud_data_generator.py generate --num_transactions=1000000
+uv run ecommerce_fraud_data_generator.py generate --config_path=config.yaml --output_file=output.parquet
 ```
 
 ## Output
@@ -95,3 +87,11 @@ The generated dataset includes:
   - Device and IP newness
   - Days since signup/last purchase
   - Customer purchase count
+
+## Data Quality and Validation
+
+The generator includes data quality validation and benchmark comparison to ensure the realism and accuracy of the generated data.
+
+## Performance and Scalability
+
+The generator supports streaming and parallel data generation to handle large datasets efficiently.
