@@ -11,3 +11,5 @@ Instead of creating summary documents, make sure that all code is self-documenti
 Treat me like an expert in the field. Do not use high level explanations.
 Anticipate what I want before I ask for it, make suggestions using the context you've built
 Be precise, accurate, and direct.
+
+If there is context that would be useful in future development tasks, make a suggestion to create a future cursor rule.

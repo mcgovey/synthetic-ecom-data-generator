@@ -43,7 +43,7 @@ merchant:
 
 # Enhanced fraud modeling with campaign-based generation
 fraud:
-  num_transactions: 50000
+  num_transactions: 10000
   # Campaign-based fraud modeling
   campaigns:
     enabled: true
