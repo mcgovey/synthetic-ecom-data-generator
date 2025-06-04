@@ -5,6 +5,8 @@ alwaysApply: true
 ---
 config.yaml houses all the main configurable parameters for how the data should be generated.
 If you make structural or logic changes or add/remove fields, always update the readme to reflect this.
+After any change, run the command `uv run ecommerce_fraud_data_generator.py generate --config_path=config.yaml` to make sure everything is operating as expected.
+Instead of creating summary documents, make sure that all code is self-documenting and reflects it's intended purpose.
 
 Treat me like an expert in the field. Do not use high level explanations.
 Anticipate what I want before I ask for it, make suggestions using the context you've built

@@ -1,17 +1,111 @@
+# Phase 1 Enhanced Configuration for Synthetic E-commerce Fraud Data Generator
 
+# Customer configuration with persona-based generation
 customer:
   num_customers: 5000
+  personas:
+    # Realistic distribution of customer personas
+    budget_conscious: 0.35      # 35% budget-conscious customers
+    average_spender: 0.40       # 40% average spenders
+    premium_customer: 0.20      # 20% premium customers
+    high_value: 0.05           # 5% high-value customers
+
+# Geographic distribution settings
+geography:
+  # Enable realistic geographic distribution across US metro areas
+  enabled: true
+  # Include international customers (future enhancement)
+  international_rate: 0.0
+
+# Merchant configuration with enhanced business modeling
 merchant:
   num_merchants: 100
+  business_patterns:
+    # Enable realistic operating hours and seasonal patterns
+    operating_hours: true
+    seasonal_effects: true
+    # Customer affinity modeling
+    customer_affinity: true
+  categories:
+    # Realistic distribution of merchant categories
+    Electronics: 0.12
+    Clothing: 0.15
+    "Food & Restaurants": 0.18
+    "Home Goods": 0.12
+    "Health & Beauty": 0.10
+    "Sports & Outdoors": 0.08
+    "Books & Media": 0.05
+    "Toys & Games": 0.06
+    Jewelry: 0.03
+    "Digital Products": 0.08
+    Services: 0.02
+    Travel: 0.01
+
+# Enhanced fraud modeling with campaign-based generation
 fraud:
   num_transactions: 1000
+  # Campaign-based fraud modeling
+  campaigns:
+    enabled: true
+    # Types of fraud campaigns to generate
+    types:
+      card_testing:
+        frequency: 0.30        # 30% of campaigns
+        duration_days: [3, 14] # 3-14 day campaigns
+      account_takeover:
+        frequency: 0.20        # 20% of campaigns
+        duration_days: [7, 30] # 1 week to 1 month
+      friendly_fraud:
+        frequency: 0.25        # 25% of campaigns
+        duration_days: [1, 7]  # 1-7 days
+      bust_out:
+        frequency: 0.15        # 15% of campaigns
+        duration_days: [30, 90] # 1-3 months
+      refund_fraud:
+        frequency: 0.10        # 10% of campaigns
+        duration_days: [5, 21] # 5-21 days
+
+# Enhanced temporal modeling
+temporal_patterns:
+  # Realistic time-of-day patterns
+  hourly_distribution: true
+  # Day-of-week patterns
+  daily_distribution: true
+  # Seasonal business cycles
+  seasonal_effects: true
+  # Holiday and special event effects
+  holiday_effects: true
+
+# Friendly fraud configuration
 friendly_fraud:
   enabled: true
   rate: 0.15
   triggers:
     buyer_remorse: 0.3
     family_dispute: 0.2
+    subscription_forgotten: 0.25
+    delivery_issues: 0.15
+    merchant_dispute: 0.1
+
+# Enhanced data realism settings
+data_realism:
+  # More realistic metadata generation
+  device_fingerprinting: true
+  # Geographic IP consistency
+  geo_ip_consistency: true
+  # Realistic payment instrument distribution
+  payment_instruments: true
+  # Enhanced user agent generation
+  user_agents: true
+
+# Output configuration
 output:
   file:
     path: "output/ecommerce_transactions_1000/results_.parquet"
     format: "parquet"
+    chunk_size: 200
+  # Statistics and validation
+  validation:
+    enabled: true
+    show_correlations: true
+    show_distributions: true

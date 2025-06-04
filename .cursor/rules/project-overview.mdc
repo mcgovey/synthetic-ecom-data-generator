@@ -3,3 +3,37 @@ description:
 globs:
 alwaysApply: false
 ---
+# Synthetic E-commerce Fraud Data Generator
+
+## Project Overview
+This project generates realistic synthetic e-commerce transaction data with fraud patterns for machine learning model development and testing.
+
+## Main Entry Point
+The primary entry point is [ecommerce_fraud_data_generator.py](mdc:ecommerce_fraud_data_generator.py), which contains the complete data generation pipeline.
+
+## Key Components
+
+### Core Classes
+- **`FraudDataGenerator`**: Main orchestrator class with `generate()` method
+- **`Customer`**: Models customer profiles, demographics, and behavioral patterns
+- **`Merchant`**: Creates merchant profiles with risk levels and transaction patterns
+- **`FriendlyFraudGenerator`**: Handles legitimate customers disputing valid charges
+
+### Configuration
+- **[config.yaml](mdc:config.yaml)**: Controls generation parameters (customer count, merchant count, transaction volume)
+- **[requirements.txt](mdc:requirements.txt)**: Python dependencies including pandas, numpy, faker, scipy
+
+### Setup and Documentation
+- **[README.md](mdc:README.md)**: Project documentation and usage instructions
+- **[setup_project.sh](mdc:setup_project.sh)** / **[setup_project.bat](mdc:setup_project.bat)**: Environment setup scripts
+
+### Output Structure
+- **`output/`**: Directory containing generated parquet files in chunks
+- **`output.parquet/`**: Alternative output directory structure
+
+## Key Features
+- Generates realistic customer demographics and behavioral patterns
+- Creates correlated fraud patterns and friendly fraud scenarios
+- Outputs data in memory-efficient chunks as parquet files
+- Uses statistical distributions for realistic transaction amounts and timing
+- Includes comprehensive fraud risk scoring

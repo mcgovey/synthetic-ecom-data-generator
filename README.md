@@ -1,18 +1,29 @@
-# Synthetic E-commerce Fraud Data Generator
+# Synthetic E-commerce Fraud Data Generator - Phase 1 Enhanced
 
-A tool for generating realistic synthetic e-commerce transaction data with fraud labels for developing and testing fraud detection models.
+A sophisticated tool for generating realistic synthetic e-commerce transaction data with fraud labels for developing and testing fraud detection models. **Phase 1 implementation includes customer personas, geographic distribution, fraud campaigns, and enhanced temporal modeling.**
 
-## Features
+## Key Features
 
-- Generates realistic customer profiles
-- Creates merchant profiles with varying risk levels
+### Phase 1 Enhancements ✨
+- **Customer Personas**: Realistic customer segments (budget-conscious, average, premium, high-value)
+- **Geographic Distribution**: US metro area-based customer distribution with timezone awareness
+- **Fraud Campaigns**: Organized fraud patterns (card testing, account takeover, bust-out fraud)
+- **Enhanced Temporal Modeling**: Realistic hourly, daily, and seasonal transaction patterns
+- **Business Hour Modeling**: Merchant-specific operating hours and patterns
+- **Customer-Merchant Affinity**: Realistic customer preferences for merchant categories
+- **Enhanced Payment Instruments**: Persona-based credit card preferences
+- **Realistic Device/IP Generation**: Geographic-consistent IP addresses and device patterns
+
+### Core Features
+- Generates realistic customer profiles with distinct behaviors
+- Creates merchant profiles with varying risk levels and business patterns
 - Simulates transaction patterns including both legitimate and fraudulent behaviors
-- Outputs data in Parquet format
+- Campaign-based fraud modeling for realistic attack patterns
+- Outputs data in chunked Parquet format for memory efficiency
 - Configuration-driven generation using YAML
 - Supports friendly fraud scenarios
 - Modular architecture for extensibility
 - Data quality validation and benchmark comparison
-- Streaming and parallel data generation for performance
 
 ## Installation
 
@@ -29,11 +40,6 @@ chmod +x setup_project.sh
 
 # For Windows users
 setup_project.bat
-# Or manually install with UV:
-# First install UV: https://astral.sh/uv/install
-# uv venv
-# .venv\Scripts\activate
-# uv pip install -r requirements.txt
 ```
 
 The setup script will:
@@ -42,124 +48,201 @@ The setup script will:
 3. Activate the virtual environment
 4. Install all required dependencies
 
-## Usage
+## Configuration
 
-The script is now fully configuration-driven using a YAML file. You can customize the generation parameters by editing the `config.yaml` file:
+The generator is now fully configuration-driven with enhanced Phase 1 parameters. Edit the `config.yaml` file to customize generation:
 
 ```yaml
+# Phase 1 Enhanced Configuration
+
+# Customer configuration with persona-based generation
 customer:
   num_customers: 5000
+  personas:
+    budget_conscious: 0.35      # 35% budget-conscious customers
+    average_spender: 0.40       # 40% average spenders
+    premium_customer: 0.20      # 20% premium customers
+    high_value: 0.05           # 5% high-value customers
+
+# Geographic distribution settings
+geography:
+  enabled: true
+  international_rate: 0.0      # US-only for now
+
+# Enhanced merchant configuration
 merchant:
   num_merchants: 100
+  business_patterns:
+    operating_hours: true       # Realistic business hours
+    seasonal_effects: true      # Seasonal business cycles
+    customer_affinity: true     # Customer-merchant preferences
+
+# Enhanced fraud modeling with campaigns
 fraud:
-  num_transactions: 200000
-friendly_fraud:
-  enabled: true
-  rate: 0.15
-  triggers:
-    buyer_remorse: 0.3
-    family_dispute: 0.2
-    subscription_forgotten: 0.25
-    delivery_issues: 0.15
-    merchant_dispute: 0.1
+  num_transactions: 1000
+  campaigns:
+    enabled: true
+    types:
+      card_testing:
+        frequency: 0.30
+        duration_days: [3, 14]
+      account_takeover:
+        frequency: 0.20
+        duration_days: [7, 30]
+      # ... additional campaign types
+
+# Enhanced temporal patterns
+temporal_patterns:
+  hourly_distribution: true     # Realistic hourly patterns
+  seasonal_effects: true       # Holiday and seasonal effects
+  holiday_effects: true        # Special event modeling
 ```
 
-To generate the dataset, simply run:
+### Key Configuration Sections
+
+#### Customer Personas
+- **budget_conscious**: Lower spending, basic devices, limited merchant categories
+- **average_spender**: Moderate spending, mixed devices, broad preferences
+- **premium_customer**: Higher spending, premium devices, luxury preferences
+- **high_value**: Highest spending, latest devices, exclusive merchants
+
+#### Geographic Distribution
+- Realistic US metro area distribution
+- Geographic-consistent IP addresses
+- Timezone-aware transaction patterns
+- Affluence-adjusted spending patterns
+
+#### Fraud Campaigns
+- **card_testing**: Automated testing of stolen card numbers
+- **account_takeover**: Compromised customer accounts
+- **friendly_fraud**: Legitimate customers disputing valid charges
+- **bust_out**: Long-term identity fraud schemes
+- **refund_fraud**: Return and refund abuse
+
+## Usage
+
+### Basic Generation
 
 ```bash
-uv run ecommerce_fraud_data_generator.py generate --config_path=config.yaml --output_file=output.parquet
+# Generate with default config
+uv run ecommerce_fraud_data_generator.py generate
+
+# Use custom configuration
+uv run ecommerce_fraud_data_generator.py generate --config_path=my_config.yaml
 ```
 
-## Output
+### Phase 1 Data Quality Improvements
 
-The generated dataset includes:
-- Customer demographics (name, email, age, signup date)
-- Merchant information (name, category, risk level)
-- Transaction details (amount, timestamp, currency)
-- Device and IP address data
-- Billing and shipping addresses
-- Payment information (credit card BIN, last4)
-- Fraud labels and risk scores
-- Various derived features useful for fraud detection:
-  - Day of week, hour of day
-  - Is weekend/night flags
-  - Address matching
-  - Device and IP newness
-  - Days since signup/last purchase
-  - Customer purchase count
+The enhanced generator produces significantly more realistic data:
 
-## Dataset Schema
+1. **Temporal Realism**: Transactions follow natural daily/weekly/seasonal patterns
+2. **Customer Behavior**: Distinct personas with consistent spending and device preferences
+3. **Merchant Patterns**: Business hours, seasonal effects, and customer affinity
+4. **Fraud Sophistication**: Campaign-based attacks with coordinated patterns
+5. **Geographic Consistency**: IP addresses, timezones, and regional spending patterns
 
-The generated dataset contains the following columns:
+## Output Structure
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| `transaction_id` | Integer | Unique identifier for each transaction |
-| `customer_id` | Integer | Unique identifier for each customer |
-| `merchant_id` | Integer | Unique identifier for each merchant |
-| `timestamp` | DateTime | Date and time when the transaction occurred |
-| `amount` | Float | Transaction amount in USD (rounded to 2 decimal places) |
-| `currency` | String | Currency code (always 'USD' in this dataset) |
-| `customer_name` | String | Full name of the customer |
-| `customer_email` | String | Email address of the customer |
-| `customer_phone` | String | Phone number of the customer |
-| `customer_age` | Integer | Age of the customer (18-80 years) |
-| `days_since_signup` | Integer | Number of days since customer signed up |
-| `device_id` | String | Unique identifier for the device used in transaction |
-| `os` | String | Operating system of the device (iOS, Android, Windows, macOS, Linux) |
-| `browser` | String | Browser used for the transaction (Chrome, Safari, Firefox, Edge, Opera) |
-| `user_agent` | String | Complete user agent string from the browser |
-| `ip_address` | String | IP address from which the transaction originated |
-| `billing_street` | String | Street address for billing |
-| `billing_city` | String | City for billing address |
-| `billing_state` | String | State abbreviation for billing address |
-| `billing_zip` | String | ZIP code for billing address |
-| `billing_country` | String | Country for billing address (always 'US') |
-| `shipping_street` | String | Street address for shipping |
-| `shipping_city` | String | City for shipping address |
-| `shipping_state` | String | State abbreviation for shipping address |
-| `shipping_zip` | String | ZIP code for shipping address |
-| `shipping_country` | String | Country for shipping address (always 'US') |
-| `cc_bin` | String | First 6 digits of the credit card (Bank Identification Number) |
-| `cc_last4` | String | Last 4 digits of the credit card |
-| `cc_expiry` | String | Credit card expiry date |
-| `merchant_name` | String | Name of the merchant |
-| `merchant_category` | String | Category of the merchant (Electronics, Clothing, Food, etc.) |
-| `days_since_last_purchase` | Integer | Number of days since customer's last purchase |
-| `customer_purchase_count` | Integer | Total number of purchases made by the customer |
-| `address_match` | Binary (0/1) | Whether billing and shipping addresses match (1=match, 0=different) |
-| `is_new_device` | Binary (0/1) | Whether the transaction used a new device for this customer |
-| `is_new_ip` | Binary (0/1) | Whether the transaction used a new IP address for this customer |
-| `is_international` | Binary (0/1) | Whether the transaction is international (always 0 in this dataset) |
-| `is_fraud` | Binary (0/1) | **Target variable**: Whether the transaction is fraudulent (1=fraud, 0=legitimate) |
-| `is_friendly_fraud` | Binary (0/1) | Whether the transaction is friendly fraud (customer disputes legitimate charge) |
-| `day_of_week` | Integer | Day of the week (0=Monday, 6=Sunday) |
-| `hour_of_day` | Integer | Hour of the day when transaction occurred (0-23) |
-| `is_weekend` | Binary (0/1) | Whether the transaction occurred on weekend (Saturday/Sunday) |
-| `is_night` | Binary (0/1) | Whether the transaction occurred at night (10 PM - 5 AM) |
-| `fraud_risk_score` | Float | Calculated risk score (0-1) based on various risk factors |
+The generator creates chunked parquet files optimized for analysis:
 
-### Key Target Variables
+```
+output/
+├── ecommerce_transactions_1000/
+│   ├── results_1.parquet     # First chunk
+│   ├── results_2.parquet     # Second chunk
+│   └── ...                   # Additional chunks
+```
 
-- **`is_fraud`**: Primary target variable for fraud detection models. Binary classification (0=legitimate, 1=fraudulent)
-- **`is_friendly_fraud`**: Secondary target for friendly fraud detection models
-- **`fraud_risk_score`**: Continuous risk score that can be used for regression models or risk-based ranking
+### Enhanced Output Schema (Phase 1)
 
-### Feature Categories
+| Column Name | Data Type | Description | Phase 1 Enhancement |
+|-------------|-----------|-------------|-------------------|
+| `transaction_id` | Integer | Unique transaction identifier | ✓ |
+| `customer_id` | Integer | Unique customer identifier | ✓ |
+| `customer_persona` | String | Customer persona type | ✨ **NEW** |
+| `customer_metro_area` | String | Customer's metro area | ✨ **NEW** |
+| `merchant_category` | String | Enhanced merchant category | ✅ **Enhanced** |
+| `merchant_years_in_business` | Float | Merchant maturity | ✨ **NEW** |
+| `merchant_geographic_scope` | String | Local/regional/national | ✨ **NEW** |
+| `timestamp` | DateTime | Transaction timestamp | ✅ **Enhanced patterns** |
+| `amount` | Float | Transaction amount | ✅ **Persona-based** |
+| `is_business_hours` | Binary | Within merchant hours | ✨ **NEW** |
+| `active_fraud_campaign` | Integer | Campaign ID if active | ✨ **NEW** |
+| `fraud_campaign_type` | String | Type of fraud campaign | ✨ **NEW** |
+| `quarter` | Integer | Business quarter | ✨ **NEW** |
+| `is_holiday_season` | Binary | Holiday shopping period | ✨ **NEW** |
+| `billing_metro_area` | String | Geographic consistency | ✨ **NEW** |
+| `fraud_risk_score` | Float | Enhanced risk calculation | ✅ **Enhanced** |
+| `is_fraud` | Binary | Fraud label | ✅ **Campaign-based** |
+| `is_friendly_fraud` | Binary | Friendly fraud label | ✓ |
 
-1. **Transaction Features**: `amount`, `timestamp`, `currency`
-2. **Customer Features**: `customer_*`, `days_since_signup`, `customer_purchase_count`
-3. **Merchant Features**: `merchant_name`, `merchant_category`
-4. **Device/Technical Features**: `device_id`, `os`, `browser`, `user_agent`, `ip_address`
-5. **Address Features**: `billing_*`, `shipping_*`, `address_match`
-6. **Behavioral Features**: `days_since_last_purchase`, `is_new_device`, `is_new_ip`
-7. **Temporal Features**: `day_of_week`, `hour_of_day`, `is_weekend`, `is_night`
-8. **Payment Features**: `cc_bin`, `cc_last4`, `cc_expiry`
+*Legend: ✨ New in Phase 1, ✅ Enhanced in Phase 1, ✓ Unchanged from original*
 
-## Data Quality and Validation
+## Data Quality Improvements
 
-The generator includes data quality validation and benchmark comparison to ensure the realism and accuracy of the generated data.
+### Before Phase 1
+- Random transaction timing
+- Uniform customer behavior
+- Independent fraud events
+- Limited merchant diversity
+- Basic risk scoring
 
-## Performance and Scalability
+### After Phase 1
+- **Realistic temporal patterns** with hourly, daily, and seasonal cycles
+- **Customer personas** with distinct spending and behavior patterns
+- **Fraud campaigns** with coordinated attack patterns
+- **Enhanced merchant modeling** with business hours and seasonal effects
+- **Geographic realism** with metro area distribution and IP consistency
+- **Sophisticated risk scoring** incorporating multiple contextual factors
 
-The generator supports streaming and parallel data generation to handle large datasets efficiently.
+## Working with Phase 1 Enhanced Data
+
+```python
+import pandas as pd
+import dask.dataframe as dd
+
+# Load the enhanced dataset
+ddf = dd.read_parquet("output/ecommerce_transactions_1000/")
+
+# Analyze customer personas
+persona_stats = ddf.groupby('customer_persona').agg({
+    'amount': 'mean',
+    'is_fraud': 'mean',
+    'transaction_id': 'count'
+}).compute()
+
+# Analyze fraud campaigns
+campaign_analysis = ddf[ddf['active_fraud_campaign'].notna()].groupby([
+    'fraud_campaign_type', 'customer_persona'
+])['is_fraud'].mean().compute()
+
+# Temporal patterns
+hourly_patterns = ddf.groupby('hour_of_day').agg({
+    'transaction_id': 'count',
+    'is_fraud': 'mean'
+}).compute()
+
+# Geographic distribution
+metro_analysis = ddf.groupby('customer_metro_area').agg({
+    'amount': 'mean',
+    'is_fraud': 'mean',
+    'transaction_id': 'count'
+}).compute()
+```
+
+## Phase 1 Validation
+
+The enhanced generator includes validation metrics to ensure data quality:
+
+- **Temporal Distribution**: Realistic hourly/daily/seasonal patterns
+- **Customer Behavior Consistency**: Persona-based spending patterns
+- **Geographic Realism**: Metro area population alignment
+- **Fraud Campaign Patterns**: Coordinated attack sequences
+- **Business Logic**: Operating hours and seasonal effects
+
+## Next Steps: Phase 2 & 3
+
+- **Phase 2**: Advanced feature engineering, network analysis, behavioral patterns
+- **Phase 3**: Production-grade enhancements, real-time capabilities, model integration
+
+The Phase 1 implementation provides a solid foundation for realistic fraud detection research and model development with significantly improved data quality and realism.
