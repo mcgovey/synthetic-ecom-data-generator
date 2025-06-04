@@ -43,7 +43,7 @@ merchant:
 
 # Enhanced fraud modeling with campaign-based generation
 fraud:
-  num_transactions: 1000
+  num_transactions: 50000
   # Campaign-based fraud modeling
   campaigns:
     enabled: true
@@ -101,9 +101,8 @@ data_realism:
 # Output configuration
 output:
   file:
-    path: "output/ecommerce_transactions_1000/results_.parquet"
-    format: "parquet"
-    chunk_size: 200
+    path: "output/ecommerce_transactions_1000"
+    chunk_size: 1000
   # Statistics and validation
   validation:
     enabled: true
