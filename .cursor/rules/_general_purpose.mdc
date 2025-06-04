@@ -1,0 +1,11 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+config.yaml houses all the main configurable parameters for how the data should be generated.
+If you make structural or logic changes or add/remove fields, always update the readme to reflect this.
+
+Treat me like an expert in the field. Do not use high level explanations.
+Anticipate what I want before I ask for it, make suggestions using the context you've built
+Be precise, accurate, and direct.

@@ -11,3 +11,7 @@ friendly_fraud:
   triggers:
     buyer_remorse: 0.3
     family_dispute: 0.2
+output:
+  file:
+    path: "output/ecommerce_transactions_1000/results_.parquet"
+    format: "parquet"

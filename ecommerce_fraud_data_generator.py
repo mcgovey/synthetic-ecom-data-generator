@@ -267,7 +267,7 @@ def generate_ecommerce_dataset(num_customers=NUM_CUSTOMERS, num_merchants=NUM_ME
                              num_transactions=NUM_TRANSACTIONS,
                              start_date=START_DATE, end_date=END_DATE,
                              chunk_size=5000,
-                             output_dir="output"): # Renamed and now represents directory
+                             output_dir="output", filename_pattern="results_"): # Renamed and now represents directory
     print("Generating customers...")
     customers = {customer_id: Customer(customer_id) for customer_id in range(1, num_customers + 1)}
 
@@ -577,7 +577,7 @@ def generate_ecommerce_dataset(num_customers=NUM_CUSTOMERS, num_merchants=NUM_ME
 
         # Save chunk to parquet
         # Write each chunk as a separate file in the output directory
-        chunk_filename = f"chunk_{i // chunk_size:04d}.parquet"
+        chunk_filename = f"{filename_pattern}{i // chunk_size + 1}.parquet"
         chunk_filepath = os.path.join(output_dir, chunk_filename)
         chunk_df.to_parquet(chunk_filepath, index=False, engine='pyarrow')
 
@@ -594,13 +594,13 @@ class FraudDataGenerator:
     model development and testing.
     """
 
-    def generate(self, config_path='config.yaml', output_file="ecommerce_fraud_dataset.parquet", chunk_size=100): # Added chunk_size arg
+    def generate(self, config_path='config.yaml', output_file=None, chunk_size=100): # Made output_file optional
         """
         Generate synthetic e-commerce transaction data and save to a parquet file.
 
         Args:
             config_path (str): Path to the configuration YAML file
-            output_file (str): Directory name for the output parquet files (will be created if it doesn't exist)
+            output_file (str): Override output directory (if None, uses config file setting)
             chunk_size (int): Number of transactions per chunk (default 100)
 
         Returns:
@@ -610,8 +610,22 @@ class FraudDataGenerator:
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
 
+        # Get output path from config if not provided as parameter
+        if output_file is None:
+            output_path = config.get('output', {}).get('file', {}).get('path', 'output/ecommerce_fraud_dataset')
+            # Extract directory and filename pattern from the path
+            if output_path.endswith('.parquet'):
+                # Remove .parquet extension and use the directory and base filename
+                output_file = os.path.dirname(output_path)
+                filename_pattern = os.path.basename(output_path).replace('.parquet', '')
+            else:
+                output_file = output_path
+                filename_pattern = 'results_'
+        else:
+            filename_pattern = 'results_'
+
         # Generate the dataset in chunks, writing directly to the output file
-        # Pass chunk_size to the generation function
+        # Pass chunk_size and filename_pattern to the generation function
         generated_output_dir = generate_ecommerce_dataset(
             num_customers=config['customer']['num_customers'],
             num_merchants=config['merchant']['num_merchants'],
@@ -619,7 +633,8 @@ class FraudDataGenerator:
             start_date=START_DATE, # Pass start_date and end_date explicitly
             end_date=END_DATE,
             chunk_size=chunk_size,
-            output_dir=output_file # Pass the output directory name
+            output_dir=output_file, # Pass the output directory name
+            filename_pattern=filename_pattern # Pass the filename pattern
         )
 
         print(f"Dataset generated in chunks in directory: {generated_output_dir}")
