@@ -15,7 +15,12 @@ from ..models.customer import Customer
 from ..models.merchant import Merchant
 from ..models.fraud_campaign import generate_fraud_campaigns
 from ..utils.temporal_patterns import TemporalPatterns
-from .fraud_generator import FriendlyFraudGenerator
+from .fraud_generator import (
+    FraudRateController, AdversarialFraudGenerator,
+    EnhancedFriendlyFraudGenerator, TechnicalFraudGenerator
+)
+from .metadata_generator import EnhancedMetadataGenerator
+from .behavioral_model import BehavioralModelingEngine
 
 # Set random seeds for reproducibility
 np.random.seed(GlobalSettings.NUMPY_SEED)
@@ -24,19 +29,28 @@ random.seed(GlobalSettings.RANDOM_SEED)
 
 class FraudDataGenerator:
     """
-    Generate synthetic e-commerce transaction data with fraud labels.
+    Enhanced Fraud Data Generator.
 
-    This tool creates a realistic dataset of e-commerce transactions
-    with both legitimate and fraudulent patterns for use in fraud detection
-    model development and testing.
+    Generate synthetic e-commerce transaction data with fraud labels using
+    realistic fraud rates, adversarial intelligence, comprehensive metadata,
+    and advanced behavioral modeling with temporal evolution.
     """
 
     def __init__(self):
         self.customers = {}
         self.merchants = {}
         self.fraud_campaigns = []
-        self.friendly_fraud_generator = FriendlyFraudGenerator()
         self.temporal_patterns = TemporalPatterns()
+
+        # Enhanced Components
+        self.fraud_rate_controller = None
+        self.adversarial_generator = None
+        self.friendly_fraud_generator = None
+        self.technical_fraud_generator = None
+        self.metadata_generator = None
+
+        # Behavioral Modeling
+        self.behavioral_engine = None
 
     def generate(self, config_path: str = 'config.yaml') -> str:
         """
@@ -50,6 +64,9 @@ class FraudDataGenerator:
         """
         # Load configuration
         config = load_config(config_path)
+
+        # Initialize Enhanced Components
+        self._initialize_fraud_generators(config)
 
         # Get configuration parameters
         num_customers = config['customer']['num_customers']
@@ -81,6 +98,10 @@ class FraudDataGenerator:
         )
         print(f"Generated {len(self.fraud_campaigns)} fraud campaigns")
 
+        # Validate fraud rates and behavioral modeling
+        self._validate_fraud_configuration()
+        self._validate_behavioral_configuration()
+
         # Generate the dataset
         generated_output_dir = self._generate_dataset(
             num_transactions=num_transactions,
@@ -95,6 +116,60 @@ class FraudDataGenerator:
         self._display_statistics(generated_output_dir)
 
         return generated_output_dir
+
+    def _initialize_fraud_generators(self, config: Dict[str, Any]) -> None:
+        """Initialize enhanced generators."""
+        print("Initializing enhanced fraud generators...")
+
+        # Initialize fraud rate controller
+        self.fraud_rate_controller = FraudRateController(config['fraud'])
+
+        # Initialize adversarial generator
+        self.adversarial_generator = AdversarialFraudGenerator(config['fraud'])
+
+        # Initialize enhanced fraud generators
+        self.friendly_fraud_generator = EnhancedFriendlyFraudGenerator(config)
+        self.technical_fraud_generator = TechnicalFraudGenerator(config, self.adversarial_generator)
+
+        # Initialize metadata generator
+        self.metadata_generator = EnhancedMetadataGenerator(config)
+
+        # Initialize behavioral modeling engine
+        if config.get('behavioral_modeling', {}).get('enabled', False):
+            print("Initializing behavioral modeling engine...")
+            self.behavioral_engine = BehavioralModelingEngine(config.get('behavioral_modeling', {}))
+        else:
+            print("Behavioral modeling disabled")
+            self.behavioral_engine = None
+
+        print(f"Effective fraud rate: {self.fraud_rate_controller.get_effective_fraud_rate():.3f}")
+
+    def _validate_behavioral_configuration(self) -> None:
+        """Validate behavioral modeling configuration."""
+        if self.behavioral_engine is None:
+            return
+
+        print(f"Behavioral Modeling Validation:")
+        print(f"  Temporal evolution enabled: {self.behavioral_engine.temporal_engine is not None}")
+        print(f"  Mimicry strength: {self.behavioral_engine.mimicry_engine.mimicry_strength:.2f}")
+        print(f"  ML awareness threshold: {self.behavioral_engine.mimicry_engine.ml_awareness:.2f}")
+        print(f"  Network effects enabled: {self.behavioral_engine.network_engine is not None}")
+        print(f"  User behavior consistency: {self.behavioral_engine.behavior_consistency:.2f}")
+
+    def _validate_fraud_configuration(self) -> None:
+        """Validate fraud configuration against realistic standards."""
+        effective_rate = self.fraud_rate_controller.get_effective_fraud_rate()
+        friendly_rate = self.fraud_rate_controller.get_friendly_fraud_rate()
+        technical_rate = self.fraud_rate_controller.get_technical_fraud_rate()
+
+        print(f"Fraud Rate Validation:")
+        print(f"  Total fraud rate: {effective_rate:.3f} ({effective_rate*100:.1f}%)")
+        print(f"  Friendly fraud rate: {friendly_rate:.3f} ({friendly_rate*100:.1f}%)")
+        print(f"  Technical fraud rate: {technical_rate:.3f} ({technical_rate*100:.1f}%)")
+
+        # Warn about unrealistic configurations
+        if effective_rate > 0.05:
+            print(f"WARNING: Fraud rate {effective_rate:.3f} is higher than typical e-commerce (0.005-0.03)")
 
     def _initialize_entities(self, num_customers: int, num_merchants: int) -> None:
         """Initialize customers and merchants."""
@@ -251,90 +326,120 @@ class FraudDataGenerator:
     def _generate_transaction(self, transaction_id: int, customer: Customer,
                             merchant: Merchant, timestamp: datetime.datetime,
                             customer_purchase_counts: Dict[int, int]) -> Dict[str, Any]:
-        """Generate a complete transaction with fraud detection."""
-        # Calculate days since last purchase
-        days_since_last_purchase = customer.get_time_since_last_purchase(timestamp)
+        """Generate a single transaction with enhancements."""
+        # Calculate customer metrics
+        customer_purchase_counts[customer.customer_id] += 1
+        customer_purchase_count = customer_purchase_counts[customer.customer_id]
 
-        # Generate transaction amount
+        # Calculate days since last purchase
+        if customer.last_purchase_date:
+            days_since_last_purchase = (timestamp.date() - customer.last_purchase_date.date()).days
+        else:
+            days_since_last_purchase = (timestamp.date() - customer.signup_date).days
+
+        # Generate transaction amount using merchant's distribution
         amount_generator = merchant.get_transaction_amount_distribution()
         amount = amount_generator()
 
-        # Enhanced fraud detection with campaign integration
-        is_fraud, is_friendly_fraud, active_campaign = self._determine_fraud_status(
-            customer, merchant, timestamp, amount, days_since_last_purchase,
-            customer_purchase_counts[customer.customer_id]
+        # Enhanced fraud determination
+        is_fraud, is_friendly_fraud, active_campaign, fraud_metadata = self._determine_fraud_status(
+            customer, merchant, timestamp, amount, days_since_last_purchase, customer_purchase_count
         )
 
-        # Device, IP, shipping determination
+        # Generate transaction context with adversarial intelligence
         device, ip_address, shipping_address = self._generate_transaction_context(
-            customer, is_fraud or is_friendly_fraud
+            customer, is_fraud, fraud_metadata
         )
 
-        # Update customer state
-        customer_purchase_counts[customer.customer_id] += 1
-
-        # Build transaction data
-        return self._build_transaction_data(
-            transaction_id, customer, merchant, timestamp, amount,
-            device, ip_address, shipping_address,
-            days_since_last_purchase, customer_purchase_counts[customer.customer_id],
-            is_fraud, is_friendly_fraud, active_campaign
+        # Build complete transaction data
+        transaction_data = self._build_transaction_data(
+            transaction_id, customer, merchant, timestamp, amount, device, ip_address,
+            shipping_address, days_since_last_purchase, customer_purchase_count,
+            is_fraud, is_friendly_fraud, active_campaign, fraud_metadata
         )
+
+        # Apply behavioral modeling enhancements
+        if self.behavioral_engine:
+            transaction_data = self.behavioral_engine.enhance_transaction_with_behavioral_context(
+                transaction_data, timestamp
+            )
+
+        return transaction_data
 
     def _determine_fraud_status(self, customer: Customer, merchant: Merchant,
                               timestamp: datetime.datetime, amount: float,
                               days_since_last_purchase: int,
-                              customer_purchase_count: int) -> Tuple[bool, bool, Any]:
-        """Determine if transaction is fraudulent."""
+                              customer_purchase_count: int) -> Tuple[bool, bool, Any, Dict[str, Any]]:
+        """Enhanced fraud determination with realistic rates and adversarial intelligence."""
+
+        # Get effective fraud rate from controller
+        base_fraud_rate = self.fraud_rate_controller.get_effective_fraud_rate()
+
         # Check if any fraud campaign affects this transaction
         active_campaigns = [c for c in self.fraud_campaigns if c.is_active(timestamp)]
 
-        # Base fraud probability calculation
-        base_fraud_prob = (customer.risk_score * 0.3 +
-                          merchant.risk_level * 0.2 +
-                          (1 - merchant.security_level) * 0.1)
+        # Start with base fraud probability
+        fraud_probability = base_fraud_rate
+        active_fraud_campaign = None
+        fraud_metadata = {}
 
         # Campaign influence on fraud probability
-        campaign_fraud_prob = base_fraud_prob
-        active_fraud_campaign = None
-
         for campaign in active_campaigns:
-            campaign_prob = campaign.get_fraud_probability(customer, merchant, base_fraud_prob)
-            if campaign_prob > campaign_fraud_prob:
-                campaign_fraud_prob = campaign_prob
+            campaign_prob = campaign.get_fraud_probability(customer, merchant, base_fraud_rate)
+            if campaign_prob > fraud_probability:
+                fraud_probability = campaign_prob
                 active_fraud_campaign = campaign
 
-        # Additional risk factors
-        time_risk = min(0.5, days_since_last_purchase / 180)
+                # Generate adversarial pattern for campaign
+                if self.adversarial_generator:
+                    fraud_metadata = self.adversarial_generator.generate_evasive_fraud_pattern(
+                        customer, merchant, campaign.fraud_type, timestamp
+                    )
 
-        amount_risk = 0
-        if customer_purchase_count > 0:
-            typical_amount = customer.avg_purchase_amount
-            amount_deviation = abs(amount - typical_amount) / max(1, typical_amount)
-            amount_risk = min(0.2, amount_deviation * 0.5)
+        # Apply realistic fraud probability caps based on transaction context
+        if customer_purchase_count == 0:  # First purchase has higher fraud risk
+            fraud_probability *= 1.5
 
-        # Final fraud probability
-        fraud_prob = min(0.95, campaign_fraud_prob + time_risk + amount_risk)
-        is_fraud = bernoulli.rvs(fraud_prob)
+        # High-value transactions have higher fraud risk but not unrealistically so
+        if amount > 1000:
+            fraud_probability *= 1.3
+        elif amount > 500:
+            fraud_probability *= 1.1
 
-        # Friendly fraud check (only if not regular fraud)
+        # Apply adversarial intelligence to reduce obvious fraud indicators
+        if fraud_metadata.get('intelligence_level', 0) > 0.7:
+            # High intelligence fraud appears more legitimate
+            fraud_probability *= 0.7
+
+        # Cap fraud probability at realistic levels
+        fraud_probability = min(0.8, fraud_probability)
+
+        # Determine if transaction is fraudulent
+        is_fraud = bernoulli.rvs(fraud_probability)
+
+        # Enhanced friendly fraud check (only if not regular fraud)
         is_friendly_fraud = False
+        friendly_fraud_metadata = {}
         if not is_fraud:
             preliminary_transaction_data = {'amount': amount, 'timestamp': timestamp}
-            friendly_fraud_prob = self.friendly_fraud_generator.generate_friendly_fraud(
-                customer, preliminary_transaction_data, merchant
+            friendly_fraud_prob, friendly_fraud_metadata = self.friendly_fraud_generator.generate_friendly_fraud(
+                customer, preliminary_transaction_data, merchant, self.fraud_rate_controller
             )
             is_friendly_fraud = bernoulli.rvs(friendly_fraud_prob)
 
-        return bool(is_fraud), bool(is_friendly_fraud), active_fraud_campaign
+            if is_friendly_fraud:
+                fraud_metadata.update(friendly_fraud_metadata)
+
+        return bool(is_fraud), bool(is_friendly_fraud), active_fraud_campaign, fraud_metadata
 
     def _generate_transaction_context(self, customer: Customer,
-                                    is_fraudulent: bool) -> Tuple[Dict[str, str], str, Dict[str, str]]:
-        """Generate device, IP, and shipping context for transaction."""
+                                    is_fraudulent: bool, fraud_metadata: Dict[str, Any] = None) -> Tuple[Dict[str, str], str, Dict[str, str]]:
+        """Generate device, IP, and shipping context with adversarial intelligence."""
         use_new_device = random.random() < 0.1
         use_new_ip = random.random() < 0.1
         shipping_address = customer.shipping_address
 
+        # Base device and IP selection
         if use_new_device:
             device = customer.get_new_device()
         else:
@@ -345,22 +450,40 @@ class FraudDataGenerator:
         else:
             ip_address = customer.get_common_ip()
 
-        # Fraud pattern modifications
-        if is_fraudulent:
-            if random.random() < 0.8:
-                device = customer.get_new_device()
-            if random.random() < 0.8:
-                ip_address = customer.get_new_ip()
-            if random.random() < 0.7:
-                from faker import Faker
-                fake = Faker()
-                shipping_address = {
-                    'street': fake.street_address(),
-                    'city': fake.city(),
-                    'state': fake.state_abbr(),
-                    'zip': fake.zipcode(),
-                    'country': 'US'
-                }
+        # Apply adversarial intelligence for fraud patterns
+        if is_fraudulent and fraud_metadata:
+            intelligence_level = fraud_metadata.get('intelligence_level', 0.5)
+            evasion_tactics = fraud_metadata.get('evasion_tactics_used', [])
+
+            # High intelligence fraud patterns
+            if intelligence_level > 0.8 and 'pattern_mimicry' in evasion_tactics:
+                # Use customer's most common device/IP to avoid detection
+                device = customer.get_common_device()
+                ip_address = customer.get_common_ip()
+                # Keep same shipping address to appear legitimate
+                # shipping_address remains unchanged
+            elif intelligence_level > 0.6:
+                # Medium intelligence - some changes but not all at once
+                if random.random() < 0.5:
+                    device = customer.get_new_device()
+                if random.random() < 0.3:  # Less likely to change IP
+                    ip_address = customer.get_new_ip()
+            else:
+                # Low intelligence fraud - obvious patterns
+                if random.random() < 0.8:
+                    device = customer.get_new_device()
+                if random.random() < 0.8:
+                    ip_address = customer.get_new_ip()
+                if random.random() < 0.7:
+                    from faker import Faker
+                    fake = Faker()
+                    shipping_address = {
+                        'street': fake.street_address(),
+                        'city': fake.city(),
+                        'state': fake.state_abbr(),
+                        'zip': fake.zipcode(),
+                        'country': 'US'
+                    }
 
         return device, ip_address, shipping_address
 
@@ -369,9 +492,12 @@ class FraudDataGenerator:
                               amount: float, device: Dict[str, str], ip_address: str,
                               shipping_address: Dict[str, str], days_since_last_purchase: int,
                               customer_purchase_count: int, is_fraud: bool,
-                              is_friendly_fraud: bool, active_campaign: Any) -> Dict[str, Any]:
-        """Build the complete transaction data dictionary."""
-        return {
+                              is_friendly_fraud: bool, active_campaign: Any,
+                              fraud_metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Build the complete transaction data dictionary with enhancements."""
+
+        # Base transaction data
+        transaction_data = {
             'transaction_id': transaction_id,
             'customer_id': customer.customer_id,
             'merchant_id': merchant.merchant_id,
@@ -426,8 +552,8 @@ class FraudDataGenerator:
 
             # Enhanced binary features
             'address_match': int(customer.billing_address == shipping_address),
-            'is_new_device': int(random.random() < 0.1),  # This should be passed from context
-            'is_new_ip': int(random.random() < 0.1),      # This should be passed from context
+            'is_new_device': int(device.get('is_new_device', False)),
+            'is_new_ip': int(device.get('is_new_ip', False)),
             'is_international': 0,
             'is_business_hours': int(merchant.get_business_hour_multiplier(timestamp.hour, timestamp.weekday()) > 0.5),
 
@@ -439,6 +565,23 @@ class FraudDataGenerator:
             'is_fraud': int(is_fraud),
             'is_friendly_fraud': int(is_friendly_fraud)
         }
+
+        # Add comprehensive metadata
+        if self.metadata_generator:
+            enhanced_metadata = self.metadata_generator.generate_comprehensive_metadata(
+                customer, merchant, transaction_data, is_fraud or is_friendly_fraud
+            )
+            transaction_data.update(enhanced_metadata)
+
+        # Add fraud intelligence metadata
+        if fraud_metadata:
+            transaction_data.update({
+                'fraud_intelligence_level': fraud_metadata.get('intelligence_level', 0.0),
+                'fraud_evasion_tactics': ','.join(fraud_metadata.get('evasion_tactics_used', [])),
+                'fraud_detection_risk_score': fraud_metadata.get('detection_risk_score', 0.0)
+            })
+
+        return transaction_data
 
     def _add_derived_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add derived temporal and categorical features."""

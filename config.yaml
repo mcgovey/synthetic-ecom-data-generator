@@ -1,4 +1,4 @@
-# Phase 1 Enhanced Configuration for Synthetic E-commerce Fraud Data Generator
+# Enhanced Configuration for Synthetic E-commerce Fraud Data Generator
 
 # Customer configuration with persona-based generation
 customer:
@@ -41,29 +41,78 @@ merchant:
     Services: 0.02
     Travel: 0.01
 
-# Enhanced fraud modeling with campaign-based generation
+# Realistic fraud modeling with proper fraud rates
 fraud:
   num_transactions: 10000
-  # Campaign-based fraud modeling
+
+  # Realistic fraud rate configuration (0.5-3% total fraud rate)
+  fraud_rates:
+    # Industry type affects base fraud rate
+    industry_type: "general_ecommerce"  # Options: general_ecommerce, digital_goods, travel, financial_services
+    base_fraud_rate: 0.015              # 1.5% base fraud rate for general e-commerce
+    friendly_fraud_rate: 0.008          # 0.8% friendly fraud rate (part of total)
+    technical_fraud_rate: 0.007         # 0.7% technical fraud rate (part of total)
+
+    # Industry-specific multipliers
+    industry_multipliers:
+      general_ecommerce: 1.0
+      digital_goods: 2.5      # Higher fraud rate for digital goods
+      travel: 1.8             # Higher fraud rate for travel
+      financial_services: 0.6  # Lower fraud rate for financial services
+
+    # Enable fraud rate validation and warnings
+    validation:
+      enabled: true
+      warn_if_above: 0.05     # Warn if fraud rate exceeds 5%
+      error_if_above: 0.10    # Error if fraud rate exceeds 10%
+
+  # Enhanced adversarial intelligence
+  adversarial_patterns:
+    enabled: true
+    # Detection threshold awareness - fraudsters adapt to avoid detection
+    detection_evasion:
+      amount_threshold_awareness: true    # Fraudsters avoid common amount thresholds
+      velocity_threshold_awareness: true  # Fraudsters space transactions to avoid velocity checks
+      geographic_evasion: true           # Fraudsters use VPNs and proxies strategically
+
+    # Adaptive fraud patterns that evolve over time
+    adaptive_behavior:
+      enabled: true
+      evolution_rate: 0.1     # How quickly fraud patterns adapt (10% per week)
+      mimicry_intelligence: 0.7  # How well fraudsters mimic legitimate behavior (0-1)
+
+    # Sophisticated evasion tactics
+    evasion_tactics:
+      legitimate_pattern_mimicry: true    # Copy victim's shopping patterns
+      gradual_escalation: true           # Start small, gradually increase risk
+      mixed_legitimate_fraud: true       # Mix fraud with legitimate transactions
+      dormancy_periods: true             # Go dormant when detection risk is high
+
+  # Campaign-based fraud modeling (enhanced with adversarial intelligence)
   campaigns:
     enabled: true
-    # Types of fraud campaigns to generate
+    # Types of fraud campaigns to generate with realistic frequencies
     types:
       card_testing:
         frequency: 0.30        # 30% of campaigns
         duration_days: [3, 14] # 3-14 day campaigns
+        adversarial_intelligence: 0.8  # High intelligence for card testing
       account_takeover:
         frequency: 0.20        # 20% of campaigns
         duration_days: [7, 30] # 1 week to 1 month
+        adversarial_intelligence: 0.9  # Very high intelligence for ATO
       friendly_fraud:
         frequency: 0.25        # 25% of campaigns
         duration_days: [1, 7]  # 1-7 days
+        adversarial_intelligence: 0.3  # Low intelligence (customer dispute)
       bust_out:
         frequency: 0.15        # 15% of campaigns
         duration_days: [30, 90] # 1-3 months
+        adversarial_intelligence: 0.7  # High intelligence for bust out
       refund_fraud:
         frequency: 0.10        # 10% of campaigns
         duration_days: [5, 21] # 5-21 days
+        adversarial_intelligence: 0.6  # Medium intelligence for refund fraud
 
 # Enhanced temporal modeling
 temporal_patterns:
@@ -87,14 +136,51 @@ friendly_fraud:
     delivery_issues: 0.15
     merchant_dispute: 0.1
 
-# Enhanced data realism settings
+# Enhanced raw transaction metadata generation
 data_realism:
-  # More realistic metadata generation
-  device_fingerprinting: true
+  # Comprehensive payment processing metadata
+  payment_processing:
+    enabled: true
+    generate_authorization_codes: true
+    generate_processing_times: true
+    generate_decline_reasons: true
+    generate_payment_processor_data: true
+
+  # Device fingerprinting data
+  device_fingerprinting:
+    enabled: true
+    generate_screen_resolution: true
+    generate_browser_language: true
+    generate_session_duration: true
+    generate_automation_signatures: true
+
+  # Network and session metadata
+  network_metadata:
+    enabled: true
+    generate_vpn_detection: true
+    generate_proxy_detection: true
+    generate_ip_geolocation: true
+    generate_connection_type: true
+
+  # Transaction flow metadata
+  transaction_flow:
+    enabled: true
+    generate_cart_abandonment: true
+    generate_checkout_duration: true
+    generate_payment_attempts: true
+    generate_session_context: true
+
+  # Enhanced payment instrument data
+  payment_instruments:
+    enabled: true
+    generate_realistic_bins: true
+    generate_issuing_banks: true
+    generate_card_countries: true
+    generate_funding_types: true
+    generate_verification_results: true
+
   # Geographic IP consistency
   geo_ip_consistency: true
-  # Realistic payment instrument distribution
-  payment_instruments: true
   # Enhanced user agent generation
   user_agents: true
 
@@ -103,8 +189,49 @@ output:
   file:
     path: "output/ecommerce_transactions_1000"
     chunk_size: 1000
-  # Statistics and validation
+  # Enhanced statistics and validation
   validation:
     enabled: true
     show_correlations: true
     show_distributions: true
+    validate_fraud_rates: true
+    show_adversarial_metrics: true
+
+# Advanced Behavioral Modeling and Temporal Evolution
+behavioral_modeling:
+  enabled: true
+
+  # Temporal fraud evolution
+  temporal_evolution:
+    enabled: true
+    fraud_lifecycle_days: 90  # How long fraud patterns evolve
+    detection_adaptation_rate: 0.15  # How quickly fraudsters adapt
+    seasonal_patterns: true
+
+  # Behavioral modeling
+  behavioral_patterns:
+    enabled: true
+    user_behavior_consistency: 0.85  # How consistent legitimate users are
+    fraud_behavior_mimicry: 0.70     # How well fraud mimics legitimate behavior
+    anomaly_detection_threshold: 0.25
+
+  # Advanced evasion tactics
+  advanced_evasion:
+    enabled: true
+    ml_model_awareness: 0.60         # How aware fraudsters are of ML detection
+    feature_engineering_awareness: 0.45
+    ensemble_evasion: true           # Multi-model evasion tactics
+
+  # Network effects
+  network_effects:
+    enabled: true
+    fraud_network_size: [3, 15]     # Range of connected fraud accounts
+    velocity_patterns: true         # Coordinated velocity attacks
+    account_similarity_scores: true
+
+  # Legitimate user sophistication
+  legitimate_sophistication:
+    enabled: true
+    privacy_conscious_rate: 0.25     # Users with VPNs, ad blockers, etc.
+    tech_savvy_behaviors: 0.35
+    cross_device_usage: 0.60
